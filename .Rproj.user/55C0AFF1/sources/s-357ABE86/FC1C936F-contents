@@ -1,0 +1,100 @@
+---
+title: "Homework-1"
+author: "ID:20007"
+date: "2020/9/22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question
+
+Use knitr to produce 3 examples in the book. The 1st example should contain texts and at least one figure. The 2nd example should contains texts and at least one table. The 3rd example should contain at least a couple of LaTeX formulas.
+
+## Answer
+
+### (1)
+In my first example, I used lattice package to make density plot. For the randomly generated data, I plotted both empirical density curve and normal fitting curve.
+
+```{r}
+library(lattice)
+n <- seq(5, 45, 5)
+x <- rnorm(sum(n))
+y <- factor(rep(n, n), labels=paste("n =", n))
+densityplot(~ x | y,
+panel = function(x, ...) {
+panel.densityplot(x, col="DarkOliveGreen", ...)
+panel.mathdensity(dmath=dnorm,
+args=list(mean=mean(x), sd=sd(x)),
+col="darkblue")
+})
+
+```
+
+### (2)
+In my second example, I used some methods to deal with the longitudinal data of some patients.
+
+
+```{r}
+stdv = function(x) {  if (NROW(x)>1)   sigma <- round(sd(x),2) 
+                                   else   sigma <- 0
+                                   sigma }
+smry <- function(X){     mu <- apply(X,2,mean)  
+sigma <- apply(X,2,stdv)
+c(mu=mu,sigma=sigma)}
+
+patients <- c("0071021198307012008001400400150",
+                       "0071201198307213009002000500200",
+                      "0090903198306611007013700300000",
+                      "0050705198307414008201300900000",
+                     "0050115198208018009601402001500",
+                     "0050618198207017008401400800400",
+                     "0050703198306414008401400800200")
+id <- substr(patients,1,3)    # First 3 digits signify the patient ID
+date <- as.Date(substr(patients,4,11), format = "%m%d%Y")    # 4-11 for treatment date
+hr <- as.numeric(substr(patients,12,14))    # Heart rate
+sbp <- as.numeric(substr(patients,15,17))    # Systolic blood pressure
+dbp <- as.numeric(substr(patients,18,20))    # Diastolic blood pressure
+dx <- substr(patients,21,23)
+docfee <- as.numeric(substr(patients,24,27))  
+labfee <- as.numeric(substr(patients,28,31))
+
+tapply(hr, id, mean)
+tapply(hr, id, stdv)
+
+# Show these results in a more compact way
+PATIENTS <- data.frame(id, hr, sbp, dbp, docfee, labfee)
+str(PATIENTS)
+smry(PATIENTS[id=='005',2:6])
+smry(PATIENTS[id=='007',2:6])
+smry(PATIENTS[id=='009',2:6])
+by(PATIENTS[2:6], id, smry) 
+by(PATIENTS[2:6], id, summary)
+
+# Calculate the difference between the first and the last observations of HR, SBP and DBP
+HrSbpDbp  <- data.frame(id, date, hr, sbp, dbp)
+# Sort by ID first, then sort by treatment date
+HrSbpDbpSorted <- HrSbpDbp[order(HrSbpDbp$id, HrSbpDbp$date), ] 
+HrSbpDbpSorted
+```
+
+### (3)
+In this example, I listed several theorems using some Latex copulas.  
+
+Levy CLT:  
+
+$\displaystyle\frac{\sqrt{n}(\bar{X} - \mu)}{\sigma} \stackrel{d}{\longrightarrow} N(0,1)$  
+  
+Berry-Esseen CLT:  
+  
+$\displaystyle\sup_{t} |G_n(t)-\Phi(t)| \leq C \frac{\rho}{\sigma^3 \sqrt{n}}$  
+  
+Percentile CLT:  
+
+$\displaystyle\lim_{n \rightarrow \infty} P \Big( \frac{\sqrt{n} (\hat{\xi}_{pn}-\xi_p)}{\sqrt{p(1-p)}/F'(\xi_p -)} \leq t \Big) = \Phi(t)$  
+
+$~$  
+
+$~$

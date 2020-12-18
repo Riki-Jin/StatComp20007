@@ -1,0 +1,140 @@
+---
+title: "Homework-2"
+author: "ID:20007"
+date: "2020/9/29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Exercise 3.3
+### Problem
+The Pareto(a, b) distribution has cdf   
+
+$$\displaystyle F(x)=1-(\frac{b}{x})^a,~~~~~~~x \geq b >0,~a>0.$$  
+
+Derive the probability inverse transformation $F^{-1}(U)$ and use the inverse transform method to simulate a random sample from the Pareto(2,2) distribution. Graph the density histogram of the sample with the Pareto(2,2) density superimposed for comparison.
+
+
+
+
+### Solution
+
+First, for the cdf  
+
+$$\displaystyle F(x)=1-(\frac{b}{x})^a,~~~~~~~x \geq b >0,~a>0$$,  
+
+I can derive its inverse  
+
+$$\displaystyle F^{-1}(x)=\frac{b}{\sqrt[a]{1-x}}~~~~~~~0 \leq x \leq 1,~a>0$$,  
+
+Then I could generate random variables from Uniform(0,1).  
+
+I will simulate a sample number of 10000, $a=b=2$ as the exercise suggests.  
+The pdf of the Pareto(a,b) distribution is  
+
+$$f(x)=\displaystyle \frac{ab^a}{x^{a+1}},~~~~~~~x \geq b >0,~a>0$$ 
+
+
+```{r}
+
+n <- 10000
+a <- 2
+b <- 2
+unifrv <- runif(n)
+paretorv <- b/(1-unifrv)^(1/a)    # inverse transformation
+hist(paretorv[paretorv>0 & paretorv<20], freq = FALSE, breaks = seq(0,20,0.5), main = "Histogram of the Pareto sample with the true density curve",xlab = "Sample value")    # graph the density histogram
+# I found that F(20)=0.99, which is very close to 1. For the sake of the tidiness and better description for the feature of the histogram, I made a truncation on x=20, and only consider the variables between 0 and 20.
+f <- function(x) {a*b^a/x^(a+1)}    # true pdf
+curve(f, 2, 20, col = 2, lwd = 3, add = TRUE)    # add the true density curve
+legend(12,0.6,"true density", col = 2, lwd = 3)    # add a legend
+
+```
+
+## Exercise 3.9
+### Problem
+The rescaled Epanechnikov kernel is a symmetric density function  
+
+$$\displaystyle f_e(x)=\frac{3}{4}(1-x^2),~~~~~~~|x| \leq 1$$  
+
+Devroye and Gyorfi give the following algorithm for simulation from this distribution. Generate iid $U_1,U_2,U_3 \sim$ Uniform(-1,1). If $|U_3|\geq|U_2|$ and $|U_3|\geq|U_1|$, deliver $U_2$; otherwise deliver |U_3|. Write a function to generate random variates from $f_e$, and construct the histogram density estimate of a large simulated random sample.
+
+### Solution
+
+Just do as the problem suggests. Consider a sample number of 10000.
+```{r}
+u1 <- runif(10000, min = -1, max = 1)    # consider a sample number of 10000
+u2 <- runif(10000, min = -1, max = 1)
+u3 <- runif(10000, min = -1, max = 1)
+u <- ifelse((abs(u3)>abs(u2) & abs(u3)>abs(u1)), u2, u3)
+hist(u, freq = FALSE, breaks = seq(-1,1,0.02), main = "Histogram with the true density curve", xlab = "Sample value")
+f <- function(x) {3/4*(1-x^2)}
+curve(f, -1, 1, col = 2, lwd = 3, add = TRUE)    # add the true density curve
+legend(0.5,0.85,"true density", col = 2, lwd = 3, cex=0.6)    # add a legend
+
+```
+
+## Exercise 3.10
+### Problem
+Prove that the algorithm given in Exercise 3.9 generates variates from the density $f_e$
+
+### Solution
+Let $X_1=|U_1|, X_2=|U_2|, X_3=|U_3|$,then clearly there is $X_1,X_2,X_3 \sim$ Uniform(0,1).  
+
+Let $X= \begin{cases}
+X_2 & ~~X_3 \geq X_1~~and~~ X_3 \geq X_2 \\
+X_3 & ~~otherwise \\
+\end{cases}$  
+Then, since $f_e(x)$ is symmetric, all I have to prove is that $X$ obeys the pdf  
+$$f_{e'}(x)=2*\frac{3}{4}(1-x^2),~~~~~~~0 \leq x \leq 1$$  
+
+Now, notice that the algorithm to generate $X$ can be rewritten as:  
+
+1. Generate $X_1,X_2,X_3 \sim$ Uniform(0,1).  
+2. Remove the largest value $X_{(3)}$  
+3. Select one of the remaining two values with equal probability. Let $X$ be this value.  
+
+For any $0 \leq x \leq 1$, consider the events:  
+$A=\{$ only one of the $X_i \leq x$ $\}$  
+$B=\{$ at least two of the $X_i \leq x$ $\}$,  
+Then, it's easy to compute the cdf of $X$, $F_{e'}(x)$ as following:
+
+\begin{align}
+F_{e'}(x)&=P(X\leq x)\\
+&=P(X \leq x,A)+P(X \leq x,B)\\
+&=P(X \leq x~|~A)*P(A) + P(X \leq x~|~B)*P(B)\\
+&=\frac{1}{2}*3x(1-x)^2 + 1*[3x^2(1-x) + x^3]\\
+&=-\frac{1}{2} x^3 +\frac{3}{2}x,~~~~~~0 \leq x \leq 1
+\end{align}  
+
+Thus, the pdf of $X$ is 
+$$ f_{e'}(x)=F'_{e'}(x)=2*\frac{3}{4}(1-x^2),~~~~~~~0 \leq x \leq 1 $$  
+
+Thus, the algorithm given in Exercise 3.9 generates variates from the density $f_e. ~~~ \Box$ 
+
+
+## Exercise 3.13
+### Problem
+It can be shown that the mixture in Exercise 3.12 has a Pareto distribution with cdf  
+$$F(y)=1-\Big(\frac{\beta}{\beta+y}\Big)^r,~~~~~~~y\geq0$$  
+
+(This is an alternative parameterization of the Pareto cdf given in Exercise
+3.3.) Generate 1000 random observations from the mixture with $r=4$ and $\beta=2$. Compare the empirical and theoretical (Pareto) distributions by graphing the density histogram of the sample and superimposing the Pareto density curve.
+
+### Solution
+Just do as the problem suggests.  
+When $r=4$ and $\beta=2$, the Pareto distribution has a pdf of  
+$$f(y)=\frac{64}{(2+y)^5},~~~~~~~y \geq 0 $$
+```{r}
+n <- 1000
+r <- 4
+beta <- 2
+gammarv <- rgamma(n, shape = r, rate = beta)
+x <- rexp(n, rate = gammarv)
+hist(x[x<5], freq = FALSE, breaks = seq(0,5,0.1), main = "Histogram of the Pareto sample with the true density curve",xlab = "Sample value")    # graph the density histogram
+f <- function(x) {64/(2+x)^5}    # true pdf
+curve(f, 0, 5, col = 2, lwd = 3, add = TRUE)    # add the true density curve
+legend(3, 1, "true density", col = 2, lwd = 3)    # add a legend
+```

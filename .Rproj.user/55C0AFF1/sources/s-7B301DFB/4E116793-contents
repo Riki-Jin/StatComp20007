@@ -1,0 +1,85 @@
+---
+title: "Homework-10"
+author: "ID:20007"
+date: "2020/12/01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Problem
+
+1.Write an Rcpp function for Exercise 9.4.  
+
+2.Compare the corresponding generated random numbers with those by the R function you wrote before using the function "qqplot".  
+
+3.Compare the computation time of the two functions with the function "microbenchmark".  
+
+4.Comments your results.
+
+## Solution
+
+```{r eval=FALSE}
+# Rcpp function for Exercise 9.4 (rwC.cpp)
+
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::export]]
+NumericVector rwC (double sigma, double x0, int N) {
+    NumericVector u = runif(N);
+    NumericVector x(N);
+    x[0] = x0;
+    for (int i=1; i <= N-1; i++) {
+        NumericVector y = rnorm(1,x[i-1],sigma);
+        if (u[i] <= exp(abs(x[i-1])-abs(y[0]))) {
+            x[i] = y[0];
+        }
+        if (u[i] > exp(abs(x[i-1])-abs(y[0]))) {
+            x[i] = x[i-1];
+        }
+    }
+    return(x);
+}
+```
+
+```{r}
+# R function for Exercise 9.4 (my homework)
+
+rw.Metro.Laplace <- function(sigma,x0,N) {
+  u <- runif(N)
+  x <- rep(0,N)
+  x[1] <- x0
+  k <- 0
+  for (i in 2:N) {
+    y <- rnorm(1, mean=x[i-1], sd=sigma)
+    if (u[i] <= exp(abs(x[i-1])-abs(y)))
+      x[i] <- y else {
+        x[i] <- x[i-1]
+        k <- k+1
+      }
+  }
+  return(list(x=x,k=k))
+}
+```
+
+```{r}
+library(Rcpp)
+sourceCpp("rwC.cpp")
+sigma <- 2
+x0 <- 5
+N <- 2000
+qqplot(rwC(sigma,x0,N), rw.Metro.Laplace(sigma,x0,N)$x)
+abline(a=0,b=1,col='red')
+```
+
+The corresponding generated random numbers could be assumed same, because the Q-Q plot of these two data mostly scatters near the diagonal line.
+
+```{r}
+library(microbenchmark)
+ts <- microbenchmark(rwC=rwC(sigma,x0,N), rwR=rw.Metro.Laplace(sigma,x0,N)$x)
+summary(ts)[,c(1,3,5,6)]
+```
+
+It's clear that Rcpp function takes much shorter time than R function. Thus, Rcpp can tremendously increase the efficiency.

@@ -1,1 +1,17 @@
-[]
+[
+    {
+        "file": "C:/Users/Zhang Jin/Desktop/Statistical Computing/StatComp20007/src/rwC.cpp",
+        "file_last_write": 1607339804.0,
+        "definitions": [
+            {
+                "usr": "c:@F@rwC#d#d#I#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "rwC(double, double, int)",
+                "file": "C:/Users/Zhang Jin/Desktop/Statistical Computing/StatComp20007/src/rwC.cpp",
+                "line": 4,
+                "column": 15
+            }
+        ]
+    }
+]

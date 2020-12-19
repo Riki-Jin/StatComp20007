@@ -3,7 +3,7 @@
     "path": "C:/Users/Zhang Jin/Desktop/Statistical Computing/StatComp20007/vignettes/Homeworks.Rmd",
     "project_path": "vignettes/Homeworks.Rmd",
     "type": "r_markdown",
-    "hash": "3736389176",
+    "hash": "0",
     "contents": "",
     "dirty": false,
     "created": 1608300554545.0,
@@ -11,15 +11,17 @@
     "relative_order": 5,
     "properties": {
         "tempName": "Untitled1",
-        "cursorPosition": "6,32",
-        "scrollLine": "0"
+        "cursorPosition": "1502,11",
+        "scrollLine": "1344",
+        "docOutlineVisible": "1",
+        "docOutlineSize": "165"
     },
     "folds": "",
-    "lastKnownWriteTime": 1608303230,
+    "lastKnownWriteTime": 1608394804,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1608303230199,
+    "last_content_update": 1608394804811,
     "read_only": false,
     "read_only_alternatives": []
 }

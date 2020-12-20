@@ -4,14 +4,14 @@ author: "Zhang Jin 20007"
 date: "2020/12/18"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Homeworks}
+  %\VignetteIndexEntry{Homeworks for Statistics Computing}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(fig.width=7, fig.height=7) 
+knitr::opts_chunk$set(fig.width=6, fig.height=6) 
 ```
 
 # Assert
@@ -24,7 +24,7 @@ Reduction of sample size:
 
 Forbiddance of running:  
 
-1. Homework 7, Discussion, I only run case 1 and mute the other 3 cases.
+1. Homework 7, Discussion
 
 2. Homework 8, Gelman-Rubin method.
 
@@ -902,7 +902,7 @@ Design experiments for evaluating the performance of the NN, energy and ball met
 
 
 ### Solution
-```{r}
+```{r eval=FALSE}
 set.seed(333)
 library(Ball)
 library(energy)
@@ -964,9 +964,6 @@ lines(x=sample_size, y=case1[,3], type="b", lwd=2, col=3)
 legend(x=5,y=1,legend=c('NN','Energy','Ball'),lwd=2,col=c(1,2,3))
 
 # Unequal variances and equal expectations
-```
-
-```{r eval=FALSE}
 
 # To save the time of create vignette, we don't run the remaining three cases.
 compare_2 <- function(sample_size) {

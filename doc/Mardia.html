@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Zhang Jin 20007" />
+
+
+<title>Mardia non-normal tools</title>
+
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Mardia non-normal tools</h1>
+<h4 class="author">Zhang Jin 20007</h4>
+<h4 class="date">2020/12/18</h4>
+
+
+
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p><strong>StatComp20007</strong> is a simple R package containing my homeworks and some simple functions dealing with non-normal random numbers generated from Gauss copulas. For my homeworks, please see the other vignette, and this vignette is an introduction of the functions beyond my homeworks.</p>
+<p>This package includes these functions:</p>
+<p><em>mardias</em>: A simplified display of the sample Mardia multivariate skewness and kurtosis of a given n*p multivariate sample.</p>
+<p><em>mstore</em>: This function can calculate some of the exact high/multivariate moments of a given zero-mean p-dimension multivariate normal distribution using Isserlis Theorem. The result was flattened into an vector instead of a p-dimension array.</p>
+<p><em>gauss_skew</em>: This function can calculate the exact Mardia multivariate skewness, given the p-dimension Gaussian generator and the parameters for Fleishman’s power method.</p>
+<p><em>gauss_kurt</em>: This function can calculate the exact Mardia multivariate kurtosis, given the p-dimension Gaussian generator and the parameters for Fleishman’s power method.</p>
+<p><em>gaussnonr</em>: This function can generate multivariate data with pre-specified multivariate skewness, kurtosis, covariance matrix and Gaussian generator.</p>
+</div>
+<div id="mardias" class="section level2">
+<h2><em>mardias</em></h2>
+<p>For any multivariate normal distribution, the Mardia skewness = 0, and the Mardia kurtosis = p(p+2). Now let’s check this property of <span class="math inline">\(p=3\)</span> by using our function <em>mardias</em>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">library</span>(MASS)</span>
+<span id="cb1-3"><a href="#cb1-3"></a>x &lt;-<span class="st"> </span><span class="kw">mvrnorm</span>(<span class="dv">1000</span>,<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>),<span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">4</span>,<span class="fl">0.7</span>,<span class="fl">0.3</span>,<span class="fl">0.7</span>,<span class="dv">2</span>,<span class="fl">1.4</span>,<span class="fl">0.3</span>,<span class="fl">1.4</span>,<span class="dv">5</span>),<span class="dt">nrow=</span><span class="dv">3</span>,<span class="dt">ncol=</span><span class="dv">3</span>))</span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="kw">mardias</span>(x)</span></code></pre></div>
+<pre><code>## [1]  0.0219667 14.9103401</code></pre>
+<p>The result is 0.02 and 14.91, which is reasonable.</p>
+</div>
+<div id="mstore" class="section level2">
+<h2><em>mstore</em></h2>
+<p>For example, if there are two zero-mean normal random variables <span class="math inline">\(X_1,X_2\)</span> which obey a MVN(c(0,0),c(2,0.7,0.7,1)), then we could calculate the moments as</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>p &lt;-<span class="st"> </span><span class="dv">2</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>sig &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">2</span>,<span class="fl">0.7</span>,<span class="fl">0.7</span>,<span class="dv">1</span>),<span class="dv">2</span>,<span class="dv">2</span>)</span>
+<span id="cb3-3"><a href="#cb3-3"></a>A &lt;-<span class="st"> </span><span class="kw">mstore</span>(p,sig)</span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="kw">matrix</span>(A,<span class="dv">13</span>,<span class="dv">13</span>)</span></code></pre></div>
+<pre><code>##        [,1]   [,2]    [,3]     [,4]      [,5]     [,6]      [,7]     [,8]
+##  [1,]     1    0.0    2.00    0.000   12.0000    0.000   120.000     0.00
+##  [2,]     0    0.7    0.00    4.200    0.0000   42.000     0.000   588.00
+##  [3,]     1    0.0    2.98    0.000   23.7600    0.000   296.400     0.00
+##  [4,]     0    2.1    0.00   14.658    0.0000  167.160     0.000  2628.36
+##  [5,]     3    0.0   11.88    0.000  112.3224    0.000  1591.272     0.00
+##  [6,]     0   10.5    0.00   83.580    0.0000 1061.768     0.000 18310.67
+##  [7,]    15    0.0   74.10    0.000  795.6360    0.000 12415.787     0.00
+##  [8,]     0   73.5    0.00  657.090    0.0000 9155.336     0.000     0.00
+##  [9,]   105    0.0  621.60    0.000 7409.3040    0.000     0.000     0.00
+## [10,]     0  661.5    0.00 6562.080    0.0000    0.000     0.000     0.00
+## [11,]   945    0.0 6520.50    0.000    0.0000    0.000     0.000     0.00
+## [12,]     0 7276.5    0.00    0.000    0.0000    0.000     0.000     0.00
+## [13,] 10395    0.0    0.00    0.000    0.0000    0.000     0.000     0.00
+##           [,9]    [,10]  [,11]  [,12]  [,13]
+##  [1,]  1680.00     0.00  30240      0 665280
+##  [2,]     0.00 10584.00      0 232848      0
+##  [3,]  4972.80     0.00 104328      0      0
+##  [4,]     0.00 52496.64      0      0      0
+##  [5,] 29637.22     0.00      0      0      0
+##  [6,]     0.00     0.00      0      0      0
+##  [7,]     0.00     0.00      0      0      0
+##  [8,]     0.00     0.00      0      0      0
+##  [9,]     0.00     0.00      0      0      0
+## [10,]     0.00     0.00      0      0      0
+## [11,]     0.00     0.00      0      0      0
+## [12,]     0.00     0.00      0      0      0
+## [13,]     0.00     0.00      0      0      0</code></pre>
+<p>The (i,j) entry indicates the value of <span class="math inline">\(E[X_1^{i-1} X_2^{j-1}]\)</span>, where (i-1)+(j-1) &lt;= 12.</p>
+</div>
+<div id="gauss_skew-and-gauss_kurt" class="section level2">
+<h2><em>gauss_skew</em> and <em>gauss_kurt</em></h2>
+<p>For example, if there are two zero-mean normal random variables <span class="math inline">\(X=(X_1,X_2)\)</span> which obey a MVN(c(0,0),c(1,0.7,0.7,1)).</p>
+<p>If we consider <span class="math inline">\(bX+cX^2+dX^3\)</span>, we could obtain the exact Mardia multivariate skewness and kurtosis by these two functions. Take <span class="math inline">\(X+2X^2+3X^3\)</span> for an example, where <span class="math inline">\(b=1,~c=2,~d=3\)</span></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>p &lt;-<span class="st"> </span><span class="dv">2</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a>sig &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">1</span>,<span class="fl">0.7</span>,<span class="fl">0.7</span>,<span class="dv">1</span>),<span class="dv">2</span>,<span class="dv">2</span>)</span>
+<span id="cb5-3"><a href="#cb5-3"></a>b &lt;-<span class="st"> </span><span class="dv">1</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>c &lt;-<span class="st"> </span><span class="dv">2</span></span>
+<span id="cb5-5"><a href="#cb5-5"></a>d &lt;-<span class="st"> </span><span class="dv">3</span></span>
+<span id="cb5-6"><a href="#cb5-6"></a><span class="kw">gauss_skew</span>(p,sig,b,c,d)</span></code></pre></div>
+<pre><code>## [1] 14.37177</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">gauss_kurt</span>(p,sig,b,c,d)</span></code></pre></div>
+<pre><code>## [1] 105.0576</code></pre>
+</div>
+<div id="gaussnonr" class="section level2">
+<h2><em>gaussnonr</em></h2>
+<p>This function can generate non-normal random numbers with desired Mardia skewness and kurtosis. The usage of this function is like:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb9-2"><a href="#cb9-2"></a>p &lt;-<span class="st"> </span><span class="dv">2</span>    <span class="co"># dimension</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a>n &lt;-<span class="st"> </span><span class="dv">10000</span>    <span class="co"># sample size</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a>ms &lt;-<span class="st"> </span><span class="dv">3</span>    <span class="co"># skewness</span></span>
+<span id="cb9-5"><a href="#cb9-5"></a>mk &lt;-<span class="st"> </span><span class="dv">20</span>    <span class="co"># kurtosis</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a>sig &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">1</span>,<span class="fl">0.7</span>,<span class="fl">0.7</span>,<span class="dv">1</span>),<span class="dv">2</span>,<span class="dv">2</span>)    <span class="co"># sig - p*p Multivariate normal covariance matrix </span></span>
+<span id="cb9-7"><a href="#cb9-7"></a>Sigma &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">1</span>,<span class="fl">0.5</span>,<span class="fl">0.5</span>,<span class="dv">1</span>),<span class="dv">2</span>,<span class="dv">2</span>)    <span class="co"># Sigma - p*p Desired result covariance matrix</span></span>
+<span id="cb9-8"><a href="#cb9-8"></a>x &lt;-<span class="st"> </span><span class="kw">gaussnonr</span>(p,n,ms,mk,sig,Sigma,<span class="dt">initial=</span><span class="ot">NULL</span>)</span></code></pre></div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,5 +1,20 @@
 #include <Rcpp.h>
 using namespace Rcpp;
+
+//' @title A random walk Metropolis sampler using Rcpp
+//' @description A random walk Metropolis sampler using Rcpp
+//' @param N the number of samples
+//' @param sigma the standard deviation used for the proposal distribution
+//' @param x0 the initial value
+//' @return a random sample of size N
+//' @examples
+//' \dontrun{
+//' sigma <- 2
+//' x0 <- 5
+//' N <- 2000
+//' rnC <- rwC(sigma, x0, N)
+//' }
+//' @export
 // [[Rcpp::export]]
 NumericVector rwC (double sigma, double x0, int N) {
     NumericVector u = runif(N);

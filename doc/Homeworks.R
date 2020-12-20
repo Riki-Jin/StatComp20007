@@ -1,6 +1,6 @@
 ## ----setup, include=FALSE-----------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(fig.width=7, fig.height=7) 
+knitr::opts_chunk$set(fig.width=6, fig.height=6) 
 
 ## -----------------------------------------------------------------------------
 library(lattice)
@@ -531,70 +531,68 @@ print(alphahat2)
 
 # 0.06154, this is a good Type-I error, which is much closer to 0.0625, and suggests that this is an available permutation test for equal variance that applies when sample sizes are not necessarily equal.
 
-## -----------------------------------------------------------------------------
-set.seed(333)
-library(Ball)
-library(energy)
-library(boot)
-library(RANN)
-
-m <- 100
-k <- 3
-p <- 2
-mu <- 0.2
-R <- 99
-n <- n1+n2
-N <- c(n1,n2)
-alpha <- 0.1
-sample_size <- c(10,20,30,50,80,100)
-
-Tn <- function(z, ix, sizes,k) {
-n1 <- sizes[1]; n2 <- sizes[2]; n <- n1 + n2
-if(is.vector(z)) z <- data.frame(z,0);
-z <- z[ix, ];
-NN <- nn2(data=z, k=k+1) # what's the first column?
-block1 <- NN$nn.idx[1:n1,-1]
-block2 <- NN$nn.idx[(n1+1):n,-1]
-i1 <- sum(block1 < n1 + .5); i2 <- sum(block2 > n1+.5)
-(i1 + i2) / (k * n)
-}
-
-eqdist.nn <- function(z,sizes,k){
-boot.obj <- boot(data=z,statistic=Tn,R=R,
-sim = "permutation", sizes = sizes,k=k)
-ts <- c(boot.obj$t0,boot.obj$t)
-p.value <- mean(ts>=ts[1])
-list(statistic=ts[1],p.value=p.value)
-}
-
-compare_1 <- function(sample_size) {
-  n1 <- n2 <- sample_size
-  n <- n1+n2
-  N <- c(n1,n2)
-  p.values <- matrix(NA,m,3)
-  for(i in 1:m){
-  x <- matrix(rnorm(n1*p,0,1.7),ncol=p);
-  y <- cbind(rnorm(n2,0,1.7),rnorm(n2));
-  z <- rbind(x,y)
-  p.values[i,1] <- eqdist.nn(z,N,k)$p.value
-  p.values[i,2] <- eqdist.etest(z,sizes=N,R=R)$p.value
-  p.values[i,3] <- bd.test(x=x,y=y,num.permutations=99,seed=i)$p.value
-  }
-  colMeans(p.values<alpha)
-}
-
-case1 <- matrix(0,nrow=6,ncol=3)
-for (i in 1:6)
-  case1[i,] <- compare_1(sample_size[i])
-
-plot(x=sample_size, y=case1[,1], type='b', xlab='Sample size', ylab='Power', main='Unequal variances and equal expectations',col=1,lwd=2,xlim=c(5,105),ylim=c(0,1))
-lines(x=sample_size, y=case1[,2], type="b", lwd=2, col=2)
-lines(x=sample_size, y=case1[,3], type="b", lwd=2, col=3)
-legend(x=5,y=1,legend=c('NN','Energy','Ball'),lwd=2,col=c(1,2,3))
-
-# Unequal variances and equal expectations
-
 ## ----eval=FALSE---------------------------------------------------------------
+#  set.seed(333)
+#  library(Ball)
+#  library(energy)
+#  library(boot)
+#  library(RANN)
+#  
+#  m <- 100
+#  k <- 3
+#  p <- 2
+#  mu <- 0.2
+#  R <- 99
+#  n <- n1+n2
+#  N <- c(n1,n2)
+#  alpha <- 0.1
+#  sample_size <- c(10,20,30,50,80,100)
+#  
+#  Tn <- function(z, ix, sizes,k) {
+#  n1 <- sizes[1]; n2 <- sizes[2]; n <- n1 + n2
+#  if(is.vector(z)) z <- data.frame(z,0);
+#  z <- z[ix, ];
+#  NN <- nn2(data=z, k=k+1) # what's the first column?
+#  block1 <- NN$nn.idx[1:n1,-1]
+#  block2 <- NN$nn.idx[(n1+1):n,-1]
+#  i1 <- sum(block1 < n1 + .5); i2 <- sum(block2 > n1+.5)
+#  (i1 + i2) / (k * n)
+#  }
+#  
+#  eqdist.nn <- function(z,sizes,k){
+#  boot.obj <- boot(data=z,statistic=Tn,R=R,
+#  sim = "permutation", sizes = sizes,k=k)
+#  ts <- c(boot.obj$t0,boot.obj$t)
+#  p.value <- mean(ts>=ts[1])
+#  list(statistic=ts[1],p.value=p.value)
+#  }
+#  
+#  compare_1 <- function(sample_size) {
+#    n1 <- n2 <- sample_size
+#    n <- n1+n2
+#    N <- c(n1,n2)
+#    p.values <- matrix(NA,m,3)
+#    for(i in 1:m){
+#    x <- matrix(rnorm(n1*p,0,1.7),ncol=p);
+#    y <- cbind(rnorm(n2,0,1.7),rnorm(n2));
+#    z <- rbind(x,y)
+#    p.values[i,1] <- eqdist.nn(z,N,k)$p.value
+#    p.values[i,2] <- eqdist.etest(z,sizes=N,R=R)$p.value
+#    p.values[i,3] <- bd.test(x=x,y=y,num.permutations=99,seed=i)$p.value
+#    }
+#    colMeans(p.values<alpha)
+#  }
+#  
+#  case1 <- matrix(0,nrow=6,ncol=3)
+#  for (i in 1:6)
+#    case1[i,] <- compare_1(sample_size[i])
+#  
+#  plot(x=sample_size, y=case1[,1], type='b', xlab='Sample size', ylab='Power', main='Unequal variances and equal expectations',col=1,lwd=2,xlim=c(5,105),ylim=c(0,1))
+#  lines(x=sample_size, y=case1[,2], type="b", lwd=2, col=2)
+#  lines(x=sample_size, y=case1[,3], type="b", lwd=2, col=3)
+#  legend(x=5,y=1,legend=c('NN','Energy','Ball'),lwd=2,col=c(1,2,3))
+#  
+#  # Unequal variances and equal expectations
 #  
 #  # To save the time of create vignette, we don't run the remaining three cases.
 #  compare_2 <- function(sample_size) {
@@ -707,4 +705,273 @@ legend(x=5,y=1,legend=c('NN','Energy','Ball'),lwd=2,col=c(1,2,3))
 #  # Unbalanced samples with the Case 1. (1:4)
 #  
 #  # From the comparison, we can find that Ball test is usually the most powerful method of these three. When dealing with mixture normal distribution, Energy test behaves better.
+
+## -----------------------------------------------------------------------------
+set.seed(3333)
+rw.Metro.Laplace <- function(sigma,x0,N) {
+  u <- runif(N)
+  x <- rep(0,N)
+  x[1] <- x0
+  k <- 0
+  for (i in 2:N) {
+    y <- rnorm(1, mean=x[i-1], sd=sigma)
+    if (u[i] <= exp(abs(x[i-1])-abs(y)))
+      x[i] <- y else {
+        x[i] <- x[i-1]
+        k <- k+1
+      }
+  }
+  return(list(x=x,k=k))
+}
+
+sigma <- c(0.05,0.2,0.5,1,2,10)
+x0 <- 20
+N <- 2000
+
+rw1 <- rw.Metro.Laplace(sigma[1],x0,N)
+rw2 <- rw.Metro.Laplace(sigma[2],x0,N)
+rw3 <- rw.Metro.Laplace(sigma[3],x0,N)
+rw4 <- rw.Metro.Laplace(sigma[4],x0,N)
+rw5 <- rw.Metro.Laplace(sigma[5],x0,N)
+rw6 <- rw.Metro.Laplace(sigma[6],x0,N)
+print(cbind(sigma=sigma, acc_rate=1-c(rw1$k,rw2$k,rw3$k,rw4$k,rw5$k,rw6$k)/N))
+
+par(mfrow=c(2,3))
+plot(rw1$x,type='l',xlab='sigma=0.05',ylab='X')
+plot(rw2$x,type='l',xlab='sigma=0.2',ylab='X')
+plot(rw3$x,type='l',xlab='sigma=0.5',ylab='X')
+plot(rw4$x,type='l',xlab='sigma=1',ylab='X')
+plot(rw5$x,type='l',xlab='sigma=2',ylab='X')
+plot(rw6$x,type='l',xlab='sigma=10',ylab='X')
+
+## ----eval=FALSE---------------------------------------------------------------
+#  Gelman.Rubin <- function(psi) {
+#  # psi[i,j] is the statistic psi(X[i,1:j])
+#  # for chain in i-th row of X
+#  psi <- as.matrix(psi)
+#  n <- ncol(psi)
+#  k <- nrow(psi)
+#  psi.means <- rowMeans(psi) #row means
+#  B <- n * var(psi.means) #between variance est.
+#  psi.w <- apply(psi, 1, "var") #within variances
+#  W <- mean(psi.w) #within est.
+#  v.hat <- W*(n-1)/n + (B/n) #upper variance est.
+#  r.hat <- v.hat / W #G-R statistic
+#  return(r.hat)
+#  }
+#  
+#  k <- 4    # four chains
+#  x0 <- c(-10,-5,5,10)    # overdispersed initial values
+#  N <- 10000    # length of chains
+#  b <- 200    # burn-in length
+#  
+#  par(mfrow=c(2,2))
+#  
+#  X <- matrix(nrow=k,ncol=N)
+#  for (i in 1:k)
+#    X[i,] <- rw.Metro.Laplace(0.2,x0[i],N)$x
+#  psi <- t(apply(X, 1, cumsum))
+#  for (i in 1:nrow(psi))
+#  psi[i,] <- psi[i,] / (1:ncol(psi))
+#  rhat <- rep(0, N)
+#  for (j in (1000+1):N)
+#  rhat[j] <- Gelman.Rubin(psi[,1:j])
+#  plot(rhat[(1000+1):N], type="l", xlab="sigma=0.2", ylab="R_hat")
+#  abline(h=1.2, lty=2)
+#  
+#  X <- matrix(nrow=k,ncol=N)
+#  for (i in 1:k)
+#    X[i,] <- rw.Metro.Laplace(1,x0[i],N)$x
+#  psi <- t(apply(X, 1, cumsum))
+#  for (i in 1:nrow(psi))
+#  psi[i,] <- psi[i,] / (1:ncol(psi))
+#  rhat <- rep(0, N)
+#  for (j in (500+1):N)
+#  rhat[j] <- Gelman.Rubin(psi[,1:j])
+#  x2 <- min(which(rhat>0 & rhat<1.2))
+#  plot(rhat[(500+1):N], type="l", xlab="sigma=1", ylab="R_hat")
+#  abline(h=1.2, lty=2)
+#  
+#  X <- matrix(nrow=k,ncol=N)
+#  for (i in 1:k)
+#    X[i,] <- rw.Metro.Laplace(4,x0[i],N)$x
+#  psi <- t(apply(X, 1, cumsum))
+#  for (i in 1:nrow(psi))
+#  psi[i,] <- psi[i,] / (1:ncol(psi))
+#  rhat <- rep(0, N)
+#  for (j in (b+1):N)
+#  rhat[j] <- Gelman.Rubin(psi[,1:j])
+#  x3 <- min(which(rhat>0 & rhat<1.2))
+#  plot(rhat[(b+1):N], type="l", xlab="sigma=4", ylab="R_hat")
+#  abline(h=1.2, lty=2)
+#  
+#  X <- matrix(nrow=k,ncol=N)
+#  for (i in 1:k)
+#    X[i,] <- rw.Metro.Laplace(16,x0[i],N)$x
+#  psi <- t(apply(X, 1, cumsum))
+#  for (i in 1:nrow(psi))
+#  psi[i,] <- psi[i,] / (1:ncol(psi))
+#  rhat <- rep(0, N)
+#  for (j in (b+1):N)
+#  rhat[j] <- Gelman.Rubin(psi[,1:j])
+#  x4 <- min(which(rhat>0 & rhat<1.2))
+#  plot(rhat[(b+1):N], type="l", xlab="sigma=16", ylab="R_hat")
+#  abline(h=1.2, lty=2)
+#  
+#  c(x2,x3,x4)
+
+## -----------------------------------------------------------------------------
+S <- function(k,a) {
+  tmp <- sqrt(a^2*k/(k+1-a^2))
+  pt(tmp, df=k)
+}
+k_store <- 4:25
+
+result <- numeric(length(k_store)+3)
+count <- 0
+
+for (k in k_store) {
+  count <- count+1
+  target <- function(a) {
+    S(k,a)-S(k-1,a)
+  }
+  out <- uniroot(target,  lower = 0.001, upper = sqrt(k)-0.1)
+  result[count] <- out$root
+}
+
+target_100 <- function(a) {
+    S(100,a)-S(99,a)
+  }
+out <- uniroot(target_100,  lower = 0.001, upper = sqrt(100)-4)    # To avoid meeting upper bound
+result[23] <- out$root
+
+target_500 <- function(a) {
+    S(500,a)-S(499,a)
+  }
+out <- uniroot(target_500,  lower = 0.001, upper = sqrt(500)-20)    # To avoid meeting upper bound
+result[24] <- out$root
+
+target_1000 <- function(a) {
+    S(1000,a)-S(999,a)
+  }
+out <- uniroot(target_1000,  lower = 0.001, upper = sqrt(1000)-25)    # To avoid meeting upper bound
+result[25] <- out$root
+
+cbind(k=c(k_store,100,500,1000),result)
+
+## -----------------------------------------------------------------------------
+na <- 444
+nb <- 132
+noo <- 361
+nab <- 63
+n <- na+nb+noo+nab
+p <- rep(0,10)
+q <- rep(0,10)
+condlike <- rep(0,10)
+p[1] <- 0.5    # Initial value
+q[1] <- 0.2    # Initial value
+for (i in 1:9) {
+  x1 <- p[i]^2/(p[i]^2+2*p[i]*(1-p[i]-q[i]))
+  x2 <- q[i]^2/(q[i]^2+2*q[i]*(1-p[i]-q[i]))
+  r <- 1-p[i]-q[i]
+  condlike[i] <- 2*noo*log(r) + nab*log(p[i]*q[i]) + na*log(p[i]*r) + nb*log(q[i]*r) + x1*na*log(p[i]/r) + x2*nb*log(q[i]/r)
+  p[i+1] <- (2*na*x1+na*(1-x1)+nab)/(2*n)
+  q[i+1] <- (2*nb*x2+nb*(1-x2)+nab)/(2*n)
+  r <- 1-p[i+1]-q[i+1]
+}
+r <- 1-p[10]-q[10]
+condlike[10] <- 2*noo*log(r) + nab*log(p[10]*q[10]) + na*log(p[10]*r) + nb*log(q[10]*r) + x1*na*log(p[10]/r) + x2*nb*log(q[10]/r)
+
+data.frame(p=p,q=q,conditional_log_likelihood=condlike)
+
+## -----------------------------------------------------------------------------
+attach(mtcars)
+formulas <- list(
+mpg ~ disp,
+mpg ~ I(1 / disp),
+mpg ~ disp + wt,
+mpg ~ I(1 / disp) + wt
+)
+
+# loops
+models_1 <- list()
+for (i in 1:4)
+  models_1[[i]] <- lm(formulas[[i]])
+models_1
+
+# lapply
+models_2 <- list()
+models_2 <- lapply(formulas, function(x) lm(x))
+models_2
+
+## -----------------------------------------------------------------------------
+trials <- replicate(
+100,
+t.test(rpois(10, 10), rpois(7, 10)),
+simplify = FALSE
+)
+sapply(trials, (function(x) x[['p.value']]))
+sapply(trials, '[[', 'p.value')    # extra challenge
+
+## -----------------------------------------------------------------------------
+lapply_1 <- function(X, FUN, FUN.VALUE) {
+  return(Map(function(x) vapply(x,FUN,FUN.VALUE),X))
+}
+list_comb <- list(cars,mtcars,faithful)
+lapply_1(list_comb, mean, numeric(1))
+
+## ----eval=FALSE---------------------------------------------------------------
+#  # Rcpp function for Exercise 9.4 (rwC.cpp)
+#  
+#  #include <Rcpp.h>
+#  using namespace Rcpp;
+#  // [[Rcpp::export]]
+#  NumericVector rwC (double sigma, double x0, int N) {
+#      NumericVector u = runif(N);
+#      NumericVector x(N);
+#      x[0] = x0;
+#      for (int i=1; i <= N-1; i++) {
+#          NumericVector y = rnorm(1,x[i-1],sigma);
+#          if (u[i] <= exp(abs(x[i-1])-abs(y[0]))) {
+#              x[i] = y[0];
+#          }
+#          if (u[i] > exp(abs(x[i-1])-abs(y[0]))) {
+#              x[i] = x[i-1];
+#          }
+#      }
+#      return(x);
+#  }
+
+## -----------------------------------------------------------------------------
+# R function for Exercise 9.4 (my homework)
+
+rw.Metro.Laplace <- function(sigma,x0,N) {
+  u <- runif(N)
+  x <- rep(0,N)
+  x[1] <- x0
+  k <- 0
+  for (i in 2:N) {
+    y <- rnorm(1, mean=x[i-1], sd=sigma)
+    if (u[i] <= exp(abs(x[i-1])-abs(y)))
+      x[i] <- y else {
+        x[i] <- x[i-1]
+        k <- k+1
+      }
+  }
+  return(list(x=x,k=k))
+}
+
+## -----------------------------------------------------------------------------
+library(Rcpp)
+sourceCpp("rwC.cpp")
+sigma <- 2
+x0 <- 5
+N <- 2000
+qqplot(rwC(sigma,x0,N), rw.Metro.Laplace(sigma,x0,N)$x)
+abline(a=0,b=1,col='red')
+
+## -----------------------------------------------------------------------------
+library(microbenchmark)
+ts <- microbenchmark(rwC=rwC(sigma,x0,N), rwR=rw.Metro.Laplace(sigma,x0,N)$x)
+summary(ts)[,c(1,3,5,6)]
 

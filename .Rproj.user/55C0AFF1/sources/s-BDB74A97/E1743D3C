@@ -3,13 +3,16 @@
     "path": "C:/Users/Zhang Jin/Desktop/Copula-Nonnormal/mnonr/vignettes/mnonr.Rmd",
     "project_path": null,
     "type": "r_markdown",
-    "hash": "2765014874",
+    "hash": "0",
     "contents": "",
     "dirty": false,
     "created": 1608300109248.0,
     "source_on_save": false,
     "relative_order": 4,
-    "properties": {},
+    "properties": {
+        "cursorPosition": "21,113",
+        "scrollLine": "0"
+    },
     "folds": "",
     "lastKnownWriteTime": 1596415293,
     "encoding": "UTF-8",

@@ -4,15 +4,29 @@ author: "Zhang Jin 20007"
 date: "2020/12/18"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Homeworks}
+  %\VignetteIndexEntry{Homeworks for Statistics Computing}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(fig.width=7, fig.height=7) 
+knitr::opts_chunk$set(fig.width=6, fig.height=6) 
 ```
+
+# Assert
+
+In order to shorten the compile time of the vignette, I reduce the sample size or forbid running of several exercises comparing with my assignment submitted. To be specific, the difference will be listed down below:  
+
+Reduction of sample size:  
+
+1. Homework 5, Exercise 6.C, I reduce the two sample sizes 1000 and 100 respectively to 100 and 30.
+
+Forbiddance of running:  
+
+1. Homework 7, Discussion
+
+2. Homework 8, Gelman-Rubin method.
 
 # Homework 1 (2020-09-22)
 
@@ -888,7 +902,7 @@ Design experiments for evaluating the performance of the NN, energy and ball met
 
 
 ### Solution
-```{r}
+```{r eval=FALSE}
 set.seed(333)
 library(Ball)
 library(energy)
@@ -950,9 +964,6 @@ lines(x=sample_size, y=case1[,3], type="b", lwd=2, col=3)
 legend(x=5,y=1,legend=c('NN','Energy','Ball'),lwd=2,col=c(1,2,3))
 
 # Unequal variances and equal expectations
-```
-
-```{r eval=FALSE}
 
 # To save the time of create vignette, we don't run the remaining three cases.
 compare_2 <- function(sample_size) {
@@ -1067,6 +1078,440 @@ legend(x=70,y=0.4,legend=c('NN','Energy','Ball'),lwd=2,col=c(1,2,3),cex=0.8)
 # From the comparison, we can find that Ball test is usually the most powerful method of these three. When dealing with mixture normal distribution, Energy test behaves better.
 ```
 
-# Homework 8 (2020-)
+# Homework 8 (2020-11-17)
 
+## Exercise 9.4
+### Problem
+
+Implement a random walk Metropolis sampler for generating the standard Laplace distribution. For the increment, simulate from a normal distribution. Compare the chains generated when different variances are used for the proposal distribution. Also, compute the acceptance rates of each chain.
+
+### Solution
+
+The standard Laplace distribution has density
+$$
+f(x)=\frac{1}{2}e^{-|x|},~~~~x \in R
+$$
+Thus,
+$$
+r(x_t,y)=f(Y)/f(X_t)=e^{-|y|+|x_t|}
+$$
+
+```{r}
+set.seed(3333)
+rw.Metro.Laplace <- function(sigma,x0,N) {
+  u <- runif(N)
+  x <- rep(0,N)
+  x[1] <- x0
+  k <- 0
+  for (i in 2:N) {
+    y <- rnorm(1, mean=x[i-1], sd=sigma)
+    if (u[i] <= exp(abs(x[i-1])-abs(y)))
+      x[i] <- y else {
+        x[i] <- x[i-1]
+        k <- k+1
+      }
+  }
+  return(list(x=x,k=k))
+}
+
+sigma <- c(0.05,0.2,0.5,1,2,10)
+x0 <- 20
+N <- 2000
+
+rw1 <- rw.Metro.Laplace(sigma[1],x0,N)
+rw2 <- rw.Metro.Laplace(sigma[2],x0,N)
+rw3 <- rw.Metro.Laplace(sigma[3],x0,N)
+rw4 <- rw.Metro.Laplace(sigma[4],x0,N)
+rw5 <- rw.Metro.Laplace(sigma[5],x0,N)
+rw6 <- rw.Metro.Laplace(sigma[6],x0,N)
+print(cbind(sigma=sigma, acc_rate=1-c(rw1$k,rw2$k,rw3$k,rw4$k,rw5$k,rw6$k)/N))
+
+par(mfrow=c(2,3))
+plot(rw1$x,type='l',xlab='sigma=0.05',ylab='X')
+plot(rw2$x,type='l',xlab='sigma=0.2',ylab='X')
+plot(rw3$x,type='l',xlab='sigma=0.5',ylab='X')
+plot(rw4$x,type='l',xlab='sigma=1',ylab='X')
+plot(rw5$x,type='l',xlab='sigma=2',ylab='X')
+plot(rw6$x,type='l',xlab='sigma=10',ylab='X')
+```
+
+## Gelman-Rubin method for Exercise 9.4
+### Problem
+For Exercise 9.4, use the Gelman-Rubin method to monitor convergence of the chain, and run the chain until it converges approximately to the target distribution according to $\hat{R}<1.2$
+
+### Solution
+
+```{r eval=FALSE}
+Gelman.Rubin <- function(psi) {
+# psi[i,j] is the statistic psi(X[i,1:j])
+# for chain in i-th row of X
+psi <- as.matrix(psi)
+n <- ncol(psi)
+k <- nrow(psi)
+psi.means <- rowMeans(psi) #row means
+B <- n * var(psi.means) #between variance est.
+psi.w <- apply(psi, 1, "var") #within variances
+W <- mean(psi.w) #within est.
+v.hat <- W*(n-1)/n + (B/n) #upper variance est.
+r.hat <- v.hat / W #G-R statistic
+return(r.hat)
+}
+
+k <- 4    # four chains
+x0 <- c(-10,-5,5,10)    # overdispersed initial values
+N <- 10000    # length of chains
+b <- 200    # burn-in length
+
+par(mfrow=c(2,2))
+
+X <- matrix(nrow=k,ncol=N)
+for (i in 1:k)
+  X[i,] <- rw.Metro.Laplace(0.2,x0[i],N)$x
+psi <- t(apply(X, 1, cumsum))
+for (i in 1:nrow(psi))
+psi[i,] <- psi[i,] / (1:ncol(psi))
+rhat <- rep(0, N)
+for (j in (1000+1):N)
+rhat[j] <- Gelman.Rubin(psi[,1:j])
+plot(rhat[(1000+1):N], type="l", xlab="sigma=0.2", ylab="R_hat")
+abline(h=1.2, lty=2)
+
+X <- matrix(nrow=k,ncol=N)
+for (i in 1:k)
+  X[i,] <- rw.Metro.Laplace(1,x0[i],N)$x
+psi <- t(apply(X, 1, cumsum))
+for (i in 1:nrow(psi))
+psi[i,] <- psi[i,] / (1:ncol(psi))
+rhat <- rep(0, N)
+for (j in (500+1):N)
+rhat[j] <- Gelman.Rubin(psi[,1:j])
+x2 <- min(which(rhat>0 & rhat<1.2))
+plot(rhat[(500+1):N], type="l", xlab="sigma=1", ylab="R_hat")
+abline(h=1.2, lty=2)
+
+X <- matrix(nrow=k,ncol=N)
+for (i in 1:k)
+  X[i,] <- rw.Metro.Laplace(4,x0[i],N)$x
+psi <- t(apply(X, 1, cumsum))
+for (i in 1:nrow(psi))
+psi[i,] <- psi[i,] / (1:ncol(psi))
+rhat <- rep(0, N)
+for (j in (b+1):N)
+rhat[j] <- Gelman.Rubin(psi[,1:j])
+x3 <- min(which(rhat>0 & rhat<1.2))
+plot(rhat[(b+1):N], type="l", xlab="sigma=4", ylab="R_hat")
+abline(h=1.2, lty=2)
+
+X <- matrix(nrow=k,ncol=N)
+for (i in 1:k)
+  X[i,] <- rw.Metro.Laplace(16,x0[i],N)$x
+psi <- t(apply(X, 1, cumsum))
+for (i in 1:nrow(psi))
+psi[i,] <- psi[i,] / (1:ncol(psi))
+rhat <- rep(0, N)
+for (j in (b+1):N)
+rhat[j] <- Gelman.Rubin(psi[,1:j])
+x4 <- min(which(rhat>0 & rhat<1.2))
+plot(rhat[(b+1):N], type="l", xlab="sigma=16", ylab="R_hat")
+abline(h=1.2, lty=2)
+
+c(x2,x3,x4)
+```
+From the result, we know that from our simulation:  
+
+1. When $\sigma=0.5$, the chain don't converge in the first $N=10000$ iterations based on the criteria $\hat{R}<1.2$.  
+
+2. When $\sigma=1$, the chain converges at $N=5611$ iteration based on the criteria $\hat{R}<1.2$.  
+
+3. When $\sigma=4$, the chain converges at $N=525$ iteration based on the criteria $\hat{R}<1.2$.  
+
+4. When $\sigma=16$, the chain converges at $N=2860$ iteration based on the criteria $\hat{R}<1.2$.  
+
+
+## Exercise 11.4
+### Problem
+
+Find the intersection points $A(k)$ in $(0,\sqrt{k})$ of the curves
+$$
+S_{k-1}(a)=P\left(t(k-1)>\sqrt{\frac{a^{2}(k-1)}{k-a^{2}}}\right)
+$$
+and
+$$
+S_{k}(a)=P\left(t(k)>\sqrt{\frac{a^{2} k}{k+1-a^{2}}}\right)
+$$
+for $k=4:25,100,500,1000$, where t(k) is a Student t random variable with k degrees of freedom.
+
+### Solution
+
+```{r}
+S <- function(k,a) {
+  tmp <- sqrt(a^2*k/(k+1-a^2))
+  pt(tmp, df=k)
+}
+k_store <- 4:25
+
+result <- numeric(length(k_store)+3)
+count <- 0
+
+for (k in k_store) {
+  count <- count+1
+  target <- function(a) {
+    S(k,a)-S(k-1,a)
+  }
+  out <- uniroot(target,  lower = 0.001, upper = sqrt(k)-0.1)
+  result[count] <- out$root
+}
+
+target_100 <- function(a) {
+    S(100,a)-S(99,a)
+  }
+out <- uniroot(target_100,  lower = 0.001, upper = sqrt(100)-4)    # To avoid meeting upper bound
+result[23] <- out$root
+
+target_500 <- function(a) {
+    S(500,a)-S(499,a)
+  }
+out <- uniroot(target_500,  lower = 0.001, upper = sqrt(500)-20)    # To avoid meeting upper bound
+result[24] <- out$root
+
+target_1000 <- function(a) {
+    S(1000,a)-S(999,a)
+  }
+out <- uniroot(target_1000,  lower = 0.001, upper = sqrt(1000)-25)    # To avoid meeting upper bound
+result[25] <- out$root
+
+cbind(k=c(k_store,100,500,1000),result)
+```
+
+# Homework 9 (2020-11-24)
+
+## A-B-O blood type problem
+### Problem
+
+Let the three alleles be A, B and O.  
+
+(Table omitted)  
+
+Observed data:
+A-type: $n_{A \cdot }=444$  
+
+B-type: $n_{B \cdot }=132$  
+
+O-type: $n_{OO}=361$  
+
+AB-type: $n_{AB}=63$  
+
+
+1. Use EM algorithm to solve MLE of $p$ and $q$. (consider missing data $n_{AA}$ and $n_{BB}$) 
+2. Record the values of $p$ and $q$ that maximize the conditional likelihood in each EM steps, calculate the corresponding log-maximum likelihood values (for observed data), are they increasing?
+
+### Solution
+
+Observed data likelihood:
+$$
+L(p,q|n_{A\cdot},n_{B\cdot},n_{OO},n_{AB})=(p^2+2p(1-p-q))^{n_{A\cdot}}(q^2+2q(1-p-q))^{n_{B\cdot}}((1-p-q)^2)^{n_{OO}}(2pq)^{n_{AB}}
+$$
+
+Complete data likelihood:
+$$
+L(p,q|n_{AA},n_{BB},n_{OO},n_{AO},n_{BO},n_{AB})=(p^2)^{n_{AA}}(q^2)^{n_{BB}}((1-p-q)^2)^{n_{OO}}(2p(1-p-q))^{n_{AO}}(2q(1-p-q))^{n_{BO}}(2pq)^{n_{AB}}
+$$
+$$
+L(p,q|n_{A\cdot},n_{B\cdot},n_{OO},n_{AB},n_{AA},n_{BB})=(p^2)^{n_{AA}}(q^2)^{n_{BB}}((1-p-q)^2)^{n_{OO}}(2p(1-p-q))^{n_{A\cdot}-n_{AA}}(2q(1-p-q))^{n_{B\cdot}-n_{BB}}(2pq)^{n_{AB}}
+$$
+
+$$
+l(p,q|n_{A\cdot},n_{B\cdot},n_{OO},n_{AB},n_{AA},n_{BB}) = 2n_{OO}\log (1-p-q) + n_{AB} \log (pq) + n_{A\cdot}\log (p(1-p-q)) + n_{B\cdot}\log (q(1-p-q)) + n_{AA}\log (p/(1-p-q)) + n_{BB}\log (q/(1-p-q)) 
+$$
+E-Step:
+$$
+\begin{aligned}
+&E_{\hat{p}_0,\hat{q}_0}[l(p,q|n_{A\cdot},n_{B\cdot},n_{OO},n_{AB},n_{AA},n_{BB})|n_{A\cdot},n_{B\cdot},n_{OO},n_{AB}]\\
+&= 2n_{OO}\log (1-p-q) + n_{AB} \log (pq) + n_{A\cdot}\log (p(1-p-q)) + n_{B\cdot}\log (q(1-p-q))\\
+&+ \frac{\hat{p}_0^2}{\hat{p}_0^2+2 \hat{p}_0(1-\hat{p}_0-\hat{q}_0)} n_{A\cdot}\log (p/(1-p-q)) + \frac{\hat{q}_0^2}{\hat{q}_0^2+2 \hat{q}_0(1-\hat{p}_0-\hat{q}_0)} n_{B\cdot}\log (q/(1-p-q))
+\end{aligned}
+$$
+
+M-Step:
+$$
+\hat{p}_1=\frac{1}{2n}(2n_{A\cdot}\frac{\hat{p}_0^2}{\hat{p}_0^2+2 \hat{p}_0(1-\hat{p}_0-\hat{q}_0)}+n_{A\cdot}\frac{2 \hat{p}_0(1-\hat{p}_0-\hat{q}_0)}{\hat{p}_0^2+2 \hat{p}_0(1-\hat{p}_0-\hat{q}_0)}+n_{AB})
+$$
+$$
+\hat{q}_1=\frac{1}{2n}(2n_{B\cdot}\frac{\hat{q}_0^2}{\hat{q}_0^2+2 \hat{q}_0(1-\hat{p}_0-\hat{q}_0)}+n_{B\cdot}\frac{2 \hat{q}_0(1-\hat{p}_0-\hat{q}_0)}{\hat{q}_0^2+2 \hat{p}_0(1-\hat{p}_0-\hat{q}_0)}+n_{AB})
+$$
+
+```{r}
+na <- 444
+nb <- 132
+noo <- 361
+nab <- 63
+n <- na+nb+noo+nab
+p <- rep(0,10)
+q <- rep(0,10)
+condlike <- rep(0,10)
+p[1] <- 0.5    # Initial value
+q[1] <- 0.2    # Initial value
+for (i in 1:9) {
+  x1 <- p[i]^2/(p[i]^2+2*p[i]*(1-p[i]-q[i]))
+  x2 <- q[i]^2/(q[i]^2+2*q[i]*(1-p[i]-q[i]))
+  r <- 1-p[i]-q[i]
+  condlike[i] <- 2*noo*log(r) + nab*log(p[i]*q[i]) + na*log(p[i]*r) + nb*log(q[i]*r) + x1*na*log(p[i]/r) + x2*nb*log(q[i]/r)
+  p[i+1] <- (2*na*x1+na*(1-x1)+nab)/(2*n)
+  q[i+1] <- (2*nb*x2+nb*(1-x2)+nab)/(2*n)
+  r <- 1-p[i+1]-q[i+1]
+}
+r <- 1-p[10]-q[10]
+condlike[10] <- 2*noo*log(r) + nab*log(p[10]*q[10]) + na*log(p[10]*r) + nb*log(q[10]*r) + x1*na*log(p[10]/r) + x2*nb*log(q[10]/r)
+
+data.frame(p=p,q=q,conditional_log_likelihood=condlike)
+```
+From the result, we could find that the corresponding log-maximum likelihood  values are increasing. The parameters converge after 9 iterations. The estimated $\hat{p}=0.2976407,~~\hat{q}=0.1027063$
+
+
+## Exercises 3 (P204)
+### Problem
+Use both for loops and lapply() to fit linear models to the mtcars using the formulas stored in this list:
+
+formulas <- list(
+mpg ~ disp,
+mpg ~ I(1 / disp),
+mpg ~ disp + wt,
+mpg ~ I(1 / disp) + wt
+)
+
+### Solution
+```{r}
+attach(mtcars)
+formulas <- list(
+mpg ~ disp,
+mpg ~ I(1 / disp),
+mpg ~ disp + wt,
+mpg ~ I(1 / disp) + wt
+)
+
+# loops
+models_1 <- list()
+for (i in 1:4)
+  models_1[[i]] <- lm(formulas[[i]])
+models_1
+
+# lapply
+models_2 <- list()
+models_2 <- lapply(formulas, function(x) lm(x))
+models_2
+```
+
+## Exercises 3 (P213)
+### Problem
+The following code simulates the performance of a t-test for non-normal data. Use sapply() and an anonymous function to extract the p-value from every trial.
+
+trials <- replicate(
+100,
+t.test(rpois(10, 10), rpois(7, 10)),
+simplify = FALSE
+)
+
+Extra challenge: get rid of the anonymous function by using [[ directly.
+
+### Solution
+```{r}
+trials <- replicate(
+100,
+t.test(rpois(10, 10), rpois(7, 10)),
+simplify = FALSE
+)
+sapply(trials, (function(x) x[['p.value']]))
+sapply(trials, '[[', 'p.value')    # extra challenge
+```
+
+## Exercises 6 (P214)
+### Problem
+Implement a combination of Map() and vapply() to create an lapply() variant that iterates in parallel over all of its inputs and stores its outputs in a vector (or a matrix). What arguments should the function take?
+
+### Solution
+```{r}
+lapply_1 <- function(X, FUN, FUN.VALUE) {
+  return(Map(function(x) vapply(x,FUN,FUN.VALUE),X))
+}
+list_comb <- list(cars,mtcars,faithful)
+lapply_1(list_comb, mean, numeric(1))
+```
+
+# Homework 10 (2020-12-01)
+
+
+### Problem
+
+1.Write an Rcpp function for Exercise 9.4.  
+
+2.Compare the corresponding generated random numbers with those by the R function you wrote before using the function "qqplot".  
+
+3.Compare the computation time of the two functions with the function "microbenchmark".  
+
+4.Comments your results.
+
+## Solution
+
+```{r eval=FALSE}
+# Rcpp function for Exercise 9.4 (rwC.cpp)
+
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::export]]
+NumericVector rwC (double sigma, double x0, int N) {
+    NumericVector u = runif(N);
+    NumericVector x(N);
+    x[0] = x0;
+    for (int i=1; i <= N-1; i++) {
+        NumericVector y = rnorm(1,x[i-1],sigma);
+        if (u[i] <= exp(abs(x[i-1])-abs(y[0]))) {
+            x[i] = y[0];
+        }
+        if (u[i] > exp(abs(x[i-1])-abs(y[0]))) {
+            x[i] = x[i-1];
+        }
+    }
+    return(x);
+}
+```
+
+```{r}
+# R function for Exercise 9.4 (my homework)
+
+rw.Metro.Laplace <- function(sigma,x0,N) {
+  u <- runif(N)
+  x <- rep(0,N)
+  x[1] <- x0
+  k <- 0
+  for (i in 2:N) {
+    y <- rnorm(1, mean=x[i-1], sd=sigma)
+    if (u[i] <= exp(abs(x[i-1])-abs(y)))
+      x[i] <- y else {
+        x[i] <- x[i-1]
+        k <- k+1
+      }
+  }
+  return(list(x=x,k=k))
+}
+```
+
+```{r}
+library(Rcpp)
+sourceCpp("rwC.cpp")
+sigma <- 2
+x0 <- 5
+N <- 2000
+qqplot(rwC(sigma,x0,N), rw.Metro.Laplace(sigma,x0,N)$x)
+abline(a=0,b=1,col='red')
+```
+
+The corresponding generated random numbers could be assumed same, because the Q-Q plot of these two data mostly scatters near the diagonal line.
+
+```{r}
+library(microbenchmark)
+ts <- microbenchmark(rwC=rwC(sigma,x0,N), rwR=rw.Metro.Laplace(sigma,x0,N)$x)
+summary(ts)[,c(1,3,5,6)]
+```
+
+It's clear that Rcpp function takes much shorter time than R function. Thus, Rcpp can tremendously increase the efficiency.
 

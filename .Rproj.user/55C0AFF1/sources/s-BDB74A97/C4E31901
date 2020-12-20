@@ -1,16 +1,16 @@
 {
-    "id": "D08DCB25",
+    "id": "C4E31901",
     "path": "C:/Users/Zhang Jin/Desktop/Copula-Nonnormal/mnonr/R/mnonr.R",
     "project_path": null,
     "type": "r_source",
     "hash": "0",
     "contents": "",
     "dirty": false,
-    "created": 1608128717217.0,
+    "created": 1608468923100.0,
     "source_on_save": false,
-    "relative_order": 3,
+    "relative_order": 8,
     "properties": {
-        "cursorPosition": "14,43",
+        "cursorPosition": "10,32",
         "scrollLine": "0"
     },
     "folds": "",
